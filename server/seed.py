@@ -1,31 +1,36 @@
-#!/usr/bin/env python3
-
-from random import choice as rc
-
-from faker import Faker
-
 from app import app
 from models import db, Author, Post
 
-
-fake = Faker()
-
 with app.app_context():
+    print("Clearing database...")
+    db.drop_all()
+    db.create_all()
 
-    Author.query.delete()
-    Post.query.delete()
+    print("Seeding database...")
 
-    authors = []
-    for n in range(25):
-        author = Author(name=fake.name(), phone_number='1324543333')
-        authors.append(author)
+    author1 = Author(name="John Doe", phone_number="1234567890")
+    author2 = Author(name="Jane Smith", phone_number="0987654321")
 
-    db.session.add_all(authors)
-    posts = []
-    for n in range(25):
-        post = Post(title='Secret banana', content='This is the content Secret' * 50, category= 'Fiction', summary="Summary Secret" )
-        posts.append(post)
-
-    db.session.add_all(posts)
-
+    db.session.add_all([author1, author2])
     db.session.commit()
+
+    post1 = Post(
+        title="You Won't Believe This Secret",
+        content="A" * 300,
+        summary="This is a summary.",
+        category="Fiction",
+        author_id=author1.id,
+    )
+
+    post2 = Post(
+        title="Top 10 Things You Must Guess",
+        content="B" * 400,
+        summary="Another valid summary.",
+        category="Non-Fiction",
+        author_id=author2.id,
+    )
+
+    db.session.add_all([post1, post2])
+    db.session.commit()
+
+    print("Database seeded!")
